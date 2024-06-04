@@ -14,7 +14,7 @@ server.config["MYSQL_PORT"] = os.environ.get("MYSQL_PORT")
 
 
 # login route
-@server.route("/login", methods=["POST"])
+@server.route("/login", method=["POST"])
 def login():
     auth = request.authorization
     if not auth:
@@ -40,4 +40,41 @@ def login():
     else:
         return "Invalid Email or Password", 401
 
-def createJWT():
+
+# token validation route
+@server.route("/validate", method=["POST"])
+def validate():
+    encoded_jwt = request.headers["Authorization"]
+
+    if not encoded_jwt:
+        return "Missing Credentials", 401
+
+    encoded_jwt = encoded_jwt.split(" ")[1]
+
+    try:
+        decoded = jwt.decode(
+            encoded_jwt, os.environ.get("JWT_SECRET"), algorithms=["HS256"]
+        )
+    except:
+        return "Invalid Authorization", 403
+
+    return decoded, 200
+
+
+# creates a JWT with an expiration of one day
+def createJWT(username, secret, authz):
+    return jwt.encode(
+        {
+            "username": username,
+            "exp": datetime.datetime.now(tz=datetime.timezone.utc)
+            + datetime.timedelta(days=1),
+            "iat": datetime.datetime.now(datetime.UTC),
+            "admin": authz,
+        },
+        secret,
+        algorithm="HS256",
+    )
+
+
+if __name__ == "__main__":
+    server.run(host="0.0.0.0", port=5000)
