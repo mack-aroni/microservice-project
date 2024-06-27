@@ -14,7 +14,7 @@ server.config["MYSQL_PORT"] = os.environ.get("MYSQL_PORT")
 
 
 # login route
-@server.route("/login", method=["POST"])
+@server.route("/login", methods=["POST"])
 def login():
     auth = request.authorization
     if not auth:
@@ -42,7 +42,7 @@ def login():
 
 
 # token validation route
-@server.route("/validate", method=["POST"])
+@server.route("/validate", methods=["POST"])
 def validate():
     encoded_jwt = request.headers["Authorization"]
 
